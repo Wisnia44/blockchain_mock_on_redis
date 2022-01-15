@@ -60,7 +60,7 @@ class TestNewStatus:
         real_value_decrypted = Transaction(**real_value_decrypted_dict)
         expected_value = Transaction(
             hash=real_hash,
-            previous_transaction="0",
+            previous_transaction="95d76e0e4a0a421d80996798a558f5c8",
             data=ParkingSlot(id="123", status=ParkingSlotStatus.FREE),
         )
 
