@@ -97,6 +97,11 @@ async def get_parking_slot_status(id: str):
     current_transaction_hash = app.last_transaction_hash
     while current_transaction_hash != "0":
         item = r.get(current_transaction_hash)
+        if not item:
+            return JSONResponse(
+                status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                content={"detail": "Base is inconsistent"},
+            )
         item_dict = json.loads(f.decrypt(item))
         transaction = Transaction(**item_dict)
         if transaction.data.id == id:
