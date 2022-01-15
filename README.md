@@ -6,7 +6,7 @@ No deletions allowed.
 
 ## API docs
 
-Full API docs could be found on: ...
+Full API docs could be found on: `http://127.0.0.1/docs`
 
 ## Possible operations
 
