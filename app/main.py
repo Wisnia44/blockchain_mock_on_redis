@@ -7,7 +7,9 @@ from uuid import uuid4
 import redis
 from cryptography.fernet import Fernet
 from fastapi import FastAPI, Response
+from fastapi.params import Depends
 
+from app.authorization import XApiHeaderAuth
 from app.config import get_settings
 from app.models import ComplexEncoder, ParkingSlot, ParkingSlotStatus, Transaction
 
@@ -23,7 +25,9 @@ app.last_transaction_hash = "0"
 
 
 @app.post("/new-status/", response_model=Transaction)
-async def change_parking_slot_status(parking_slot: ParkingSlot):
+async def change_parking_slot_status(
+    parking_slot: ParkingSlot, api_key_header: str = Depends(XApiHeaderAuth)
+):
     transaction_hash = uuid4().hex
     transaction = Transaction(
         hash=transaction_hash,
@@ -41,7 +45,7 @@ async def change_parking_slot_status(parking_slot: ParkingSlot):
 
 
 @app.get("/get-transaction/", response_model=Optional[Transaction])
-async def get_transaction(hash: str):
+async def get_transaction(hash: str, api_key_header: str = Depends(XApiHeaderAuth)):
     item = r.get(hash)
     if not item:
         return Response(
@@ -54,7 +58,7 @@ async def get_transaction(hash: str):
 
 
 @app.get("/get-all-transactions/", response_model=List[Transaction])
-async def get_all_transactions():
+async def get_all_transactions(api_key_header: str = Depends(XApiHeaderAuth)):
     current_transaction_hash = app.last_transaction_hash
     transactions = []
     while current_transaction_hash != "0":
@@ -67,7 +71,9 @@ async def get_all_transactions():
 
 
 @app.get("/get-parking-slot-status/", response_model=Optional[ParkingSlotStatus])
-async def get_parking_slot_status(id: str):
+async def get_parking_slot_status(
+    id: str, api_key_header: str = Depends(XApiHeaderAuth)
+):
     current_transaction_hash = app.last_transaction_hash
     while current_transaction_hash != "0":
         item = r.get(current_transaction_hash)
