@@ -6,7 +6,8 @@ from uuid import uuid4
 
 import redis
 from cryptography.fernet import Fernet
-from fastapi import FastAPI, Response
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from fastapi.params import Depends
 
 from app.authorization import verify_key
@@ -61,9 +62,9 @@ async def change_parking_slot_status(
 async def get_transaction(hash: str):
     item = r.get(hash)
     if not item:
-        return Response(
+        return JSONResponse(
             status_code=HTTPStatus.NOT_FOUND,
-            content=f"Transaction with hash {hash} not found",
+            content={"detail": f"Transaction with hash {hash} not found"},
         )
 
     item_dict = json.loads(f.decrypt(item))
@@ -101,7 +102,7 @@ async def get_parking_slot_status(id: str):
         if transaction.data.id == id:
             return transaction.data.status
         current_transaction_hash = transaction.previous_transaction
-    return Response(
+    return JSONResponse(
         status_code=HTTPStatus.NOT_FOUND,
-        content=f"Parking slot with id {id} not found",
+        content={"detail": f"Parking slot with id {id} not found"},
     )

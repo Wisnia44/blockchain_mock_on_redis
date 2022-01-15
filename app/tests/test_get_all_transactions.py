@@ -2,14 +2,12 @@ from http import HTTPStatus
 from unittest.mock import MagicMock, patch
 
 import redis
-from cryptography.fernet import Fernet
 from fastapi.testclient import TestClient
 
 from app.config import get_settings
 from app.tests.test_consts import DB_GET_ENCRYPTED_VALUE, INVALID_X_API_KEY
 
 settings = get_settings()
-f = Fernet(settings.fernet_key_url_safe_base64_encoded)
 
 
 class TestGetAllTransactions:
