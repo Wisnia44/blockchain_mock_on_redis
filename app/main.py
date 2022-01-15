@@ -1,14 +1,15 @@
 import json
 import logging
-from typing import List
+from http import HTTPStatus
+from typing import List, Optional
 from uuid import uuid4
 
 import redis
 from cryptography.fernet import Fernet
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 
 from app.config import get_settings
-from app.models import ParkingSlot, ParkingSlotStatus, Transaction
+from app.models import ComplexEncoder, ParkingSlot, ParkingSlotStatus, Transaction
 
 settings = get_settings()
 app = FastAPI(
@@ -27,20 +28,29 @@ async def change_parking_slot_status(parking_slot: ParkingSlot):
     transaction = Transaction(
         hash=transaction_hash,
         previous_transaction=app.last_transaction_hash,
-        data=parking_slot.__dict__,
+        data=parking_slot,
     )
     r.set(
-        name=transaction_hash, value=f.encrypt(json.dumps(transaction.__dict__).encode("utf-8"))
+        name=transaction_hash,
+        value=f.encrypt(
+            json.dumps(transaction.reprJSON(), cls=ComplexEncoder).encode("utf-8")
+        ),
     )
     app.last_transaction_hash = transaction_hash
-    logging.info("New last_transaction_hash is %s", app.last_transaction_hash)
     return transaction
 
 
-@app.get("/get-transaction/", response_model=ParkingSlot)
+@app.get("/get-transaction/", response_model=Optional[Transaction])
 async def get_transaction(hash: str):
-    parking_slot = ParkingSlot(id="1", status=ParkingSlotStatus.FREE.value)
-    return parking_slot
+    item = r.get(hash)
+    if not item:
+        return Response(
+            status_code=HTTPStatus.NOT_FOUND.value,
+            content=f"Transaction with hash {hash} not found",
+        )
+
+    item_dict = json.loads(f.decrypt(item))
+    return Transaction(**item_dict)
 
 
 @app.get("/get-all-transactions/", response_model=List[Transaction])
@@ -56,6 +66,17 @@ async def get_all_transactions():
     return transactions
 
 
-@app.get("/get-parking-slot-status/", response_model=ParkingSlotStatus)
+@app.get("/get-parking-slot-status/", response_model=Optional[ParkingSlotStatus])
 async def get_parking_slot_status(id: str):
-    return ParkingSlotStatus.FREE.value
+    current_transaction_hash = app.last_transaction_hash
+    while current_transaction_hash != "0":
+        item = r.get(current_transaction_hash)
+        item_dict = json.loads(f.decrypt(item))
+        transaction = Transaction(**item_dict)
+        if transaction.data.id == id:
+            return transaction.data.status
+        current_transaction_hash = transaction.previous_transaction
+    return Response(
+        status_code=HTTPStatus.NOT_FOUND.value,
+        content=f"Parking slot with id {id} not found",
+    )
