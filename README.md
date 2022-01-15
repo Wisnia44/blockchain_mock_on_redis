@@ -46,3 +46,7 @@ Usage:
 ```curl
 curl --location --request GET 'http://0.0.0.0:8000/get-parking-slot-status/?id=123456'
 ```
+
+## Testing solution
+
+There are 12 test cases implemented. In order to test the solution use command `pytest`.

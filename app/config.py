@@ -6,6 +6,7 @@ from pydantic import BaseSettings
 
 class Settings(BaseSettings):
     fernet_key: str = "30f98e425b6142e3b2bdeaf00224f459"
+    x_api_key: str = "beautiful_key"
 
     @property
     def fernet_key_url_safe_base64_encoded(self):
