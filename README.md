@@ -1,8 +1,8 @@
 # Blockchain mock on redis
 
-Proof of concept: blockchain centralized database based on Redis with REST API interface.\\
-Serves storing and verifying parking slot occupation state.\\
-No deletions allowed.\\
+Proof of concept: blockchain centralized database based on Redis with REST API interface.\
+Serves storing and verifying parking slot occupation state.\
+No deletions allowed.
 
 ## API docs
 
