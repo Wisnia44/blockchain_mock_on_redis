@@ -2,6 +2,6 @@ cryptography==39.0.1
 fastapi==0.71.0
 pydantic==1.8.2
 pytest==6.2.3
-redis==4.1.0
+redis==4.4.4
 types-redis==4.1.8
 uvicorn==0.13.4
