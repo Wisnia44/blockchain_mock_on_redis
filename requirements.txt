@@ -1,6 +1,6 @@
 cryptography==42.0.4
 fastapi==0.109.1
-pydantic==1.8.2
+pydantic==1.10.13
 pytest==6.2.3
 redis==4.4.4
 types-redis==4.1.8
